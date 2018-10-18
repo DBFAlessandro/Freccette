@@ -97,7 +97,9 @@ class Bersaglio extends JPanel
      int min = width > height ? height : width;
      
      double delta = min / centri;
-   
+     //TODO INSERIRE NUMERO PROETTILI IN ALTO A DEX O BASSO COME FRECCETTE
+     //ICONA MOUSE FRECCETTA UN PO DIVERSA
+     
      //BERSAGLIO
      for(int i = 0; i < centri; i++)
      {
