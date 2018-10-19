@@ -5,8 +5,12 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 public class Freccette
 {
@@ -30,15 +34,20 @@ public class Freccette
 }
 
 
-class Bersaglio extends JPanel
+class Bersaglio extends JPanel implements ActionListener 
 {
     private int centri;
     private int xPos;
     private int yPos;
+    private int xMouseTick;
+    private int yMouseTick;
     private int punteggio;
+    private Timer timer = new Timer(50, this);
     
     public Bersaglio(int c)
     {
+      xMouseTick = 0;
+      yMouseTick = 0;
       punteggio     = 0;
       centri        = c;
       setBackground(Color.GREEN);
@@ -76,6 +85,8 @@ class Bersaglio extends JPanel
              // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
           }
       });
+      
+      timer.start();
     
     }
     
@@ -93,13 +104,14 @@ class Bersaglio extends JPanel
      
      int centrox = width / 2;
      int centroy = height / 2;
-             
+              
      int min = width > height ? height : width;
      
      double delta = min / centri;
      //TODO INSERIRE NUMERO PROETTILI IN ALTO A DEX O BASSO COME FRECCETTE
      //ICONA MOUSE FRECCETTA UN PO DIVERSA
      
+    
      //BERSAGLIO
      for(int i = 0; i < centri; i++)
      {
@@ -143,6 +155,36 @@ class Bersaglio extends JPanel
      g.setFont(new Font("TimesRoman", Font.PLAIN, min / 11)); 
    
      g.drawString(String.format("%-5d",punteggio),5,5+height / 10 );
+   
+      //MIRINO
+     if(xMouseTick > 0)
+     {
+     
+      g.setColor(Color.black);
+
+      for(int i = -10 ; i < 10; i++)
+      {
+         g.fillOval(xMouseTick + i * 3, yMouseTick - 1, 2, 2);
+      }
+  
+      for(int i = -10 ; i < 10; i++)
+      {
+         g.fillOval(xMouseTick - 1, yMouseTick + i * 3, 2, 2);
+      }
+     }
+     
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        //la mouse info mi da un punto in cordinate schermo
+        Point location = MouseInfo.getPointerInfo().getLocation();
+        //le converto in coordinate finestra
+        SwingUtilities.convertPointFromScreen(location, this);
+        //salvo i dati e ridisegno
+        xMouseTick = location.x;
+        yMouseTick = location.y;
+        repaint();
     }
 
 }
