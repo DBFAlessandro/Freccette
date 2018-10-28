@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.HashMap;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
@@ -48,6 +49,7 @@ public class Freccette
 
 class Bersaglio extends JPanel implements ActionListener 
 {
+    private HashMap<Integer,Font> fonts;
     private int centri;
     private int xPos;
     private int yPos;
@@ -69,6 +71,8 @@ class Bersaglio extends JPanel implements ActionListener
     private Color fontAndAimColor;
     private Color additiveColor;
     private final int coolDownMillis;
+    private Color[] colori;
+    
     public Bersaglio(int numTargets, int numWeapons, int coolDown,Color backGround, Color weapons, Color score, Color fontAndAim, Color base, Color additive)         
     {
       xMouseTick    = 0;
@@ -92,7 +96,17 @@ class Bersaglio extends JPanel implements ActionListener
  
       fontAndAimColor = fontAndAim;
       additiveColor = additive;
-    
+      
+      //ADDED A CACHE FOR FONTS
+      fonts = new HashMap<Integer,Font>();
+      //ADDED A CACHE FOR COLORS
+      colori = new Color[centri];
+          
+      for(int i = 0; i < centri; i++)
+      {
+        int deltac = i % 2 == 0 ? additiveColor.getRed() : additiveColor.getGreen();
+        colori[i] = new Color((baseColor.getRed() + i*deltac) % 255 ,(baseColor.getGreen()+i*deltac) % 255,(baseColor.getBlue()+i*additiveColor.getBlue()) % 255);
+      }
       //SETTO IL BACKGROUND
       setBackground(backGround);
       //AGGIUNGO UN GESTORE EVENTI MOUSE CLICK
@@ -103,8 +117,9 @@ class Bersaglio extends JPanel implements ActionListener
           {    
                //POTREBBE ESSERE ALTERATA RISPETTO AL MOUSE DI QUALCHE FATTORE
                setAimPosition(e.getX(),e.getY());
-               //UPDATE
-               repaint();          
+                //UPDATE SE NECESSARIO, si, click
+                repaint();
+                      
           }
 
           @Override
@@ -236,15 +251,17 @@ class Bersaglio extends JPanel implements ActionListener
     //DISEGNA UN ANELLO
     private void drawTarget(Graphics g,int i,double diametro)
     {
-        int deltac = i % 2 == 0 ? additiveColor.getRed() : additiveColor.getGreen();
-     //TODO: vorrei togliere la new qua
-        g.setColor(new Color((baseColor.getRed() + i*deltac) % 255 ,(baseColor.getGreen()+i*deltac) % 255,(baseColor.getBlue()+i*additiveColor.getBlue()) % 255));
+       
+        //ADDED AN ARRAY OF COLORS
+        g.setColor(getColoreAnello(i));
         double x = getWidth()  / 2 - diametro / 2; 
         double y = getHeight() / 2 - diametro / 2; 
         
         g.fillOval((int)x, (int)y, (int)diametro, (int)diametro);
         
     }
+    
+  
      //DISEGNA IL CARICATORE DI MUNIZIONI
     private void drawWeapons(Graphics g)
     {
@@ -285,11 +302,25 @@ class Bersaglio extends JPanel implements ActionListener
      g.fillRect(4, 4, 40+getWidth() / 10 - 4, 10+getHeight() / 10 - 4);
      
      g.setColor(fontAndAimColor);
-     //TODO: vorrei togliere la new qua
-     g.setFont(new Font("TimesRoman", Font.PLAIN, getHeight() / 11)); 
+//ADDED A CACHE FOR FONTS
+     g.setFont(getFontPunteggio()); 
      g.drawString(String.format("%-5d",punteggio),5,5+getHeight() / 10 );
     }
-    
+    private Color getColoreAnello(int i)
+    {
+      return colori[i];
+    }
+    private Font getFontPunteggio()
+    {
+      int sizeY = getHeight() / 11;
+      Font f = fonts.get(sizeY);
+      if(f == null)
+      {
+        f = new Font("Tahoma",25,sizeY);
+        fonts.put(sizeY, f);
+      }
+      return f;
+    }
     //DEFINISCO DOVE STO MIRANDO
     private void setAimPosition(int x,int y)
     {
